@@ -1,7 +1,10 @@
-## 版本1.0
-1. 大概先把功能弄出來，後續微調
-2. main未實作完成
-3. 此系統未來會有不同檔案，但目前就這樣
+## 版本1.1
+1. Reader_ID 更新為 char 
+2. Search_Reader 使用 `strcmp`比對
+3. Create_Reader 中使用 `strcpy` 複製 reader_ID
+4. 修正AVL tree 平衡因子計算，避免空指針
+5. 使用Book*, 動態紀錄多本書
+6. maybe有memory leak的問題，待後續追蹤
 
 ## 需求分析
 

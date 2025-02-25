@@ -1,12 +1,6 @@
-## 版本1.1
-1. Reader_ID 更新為 char 
-2. Search_Reader 使用 `strcmp`比對
-3. Create_Reader 中使用 `strcpy` 複製 reader_ID
-4. 修正AVL tree 平衡因子計算，避免空指針
-5. 使用Book*, 動態紀錄多本書
-6. maybe有memory leak的問題，待後續追蹤
+## 版本1.2
+1. 新增可用terminal 介面，如有問題會重新更新紀錄
 
-未來修正，並新增與館員互動的功能。
 
 ## 需求分析
 

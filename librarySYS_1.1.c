@@ -398,69 +398,160 @@ void Insert_borrow_record(BorrowRecord** head, Reader* reader_id, Book* book)
     *head = new_record;
 }
 
-int main()
-{
-    BorrowRecord *borrow_list = NULL;  
-    AVLTree *root = NULL;
 
-    // 初始化 BookTable
-    for(int i = 0; i < TABLESIZE; i++) {
-        BookTable[i] = NULL;
-    }
+void ShowMenu() {
+    printf("\n=========== University Library System ===========\n");
+    printf("1. Add Reader\n");
+    printf("2. Search Reader\n");
+    printf("3. Add Book\n");
+    printf("4. Search Book\n");
+    printf("5. Borrow Book\n");
+    printf("6. Display All Readers\n");
+    printf("7. Display All Books\n");
+    printf("8. Exit\n");
+    printf("===============================================\n");
+    printf("Please select an option: ");
+}
 
-    // 讀者管理
-    Reader* reader_list = NULL;
-    char reader_ID[MAXID] = "012345678";
-    Insert_Reader(&reader_list, reader_ID, "John", "1234567890");
+// Main program: handling user commands
+int main() {
+    Reader* reader_list = NULL;   // Reader linked list
+    BorrowRecord* borrow_list = NULL; // Borrow records
+    Book* BookTable[TABLESIZE] = {0}; // Book hash table
 
-    // 書籍管理
-    Book* new_book = (Book*)malloc(sizeof(Book));
-    if(new_book == NULL) {
-        perror("Memory allocation failed\n");
-        return EXIT_FAILURE;
-    }
-    
-    strncpy(new_book->Book_ISBN, "9781234567890", ISBN - 1);
-    new_book->Book_ISBN[ISBN - 1] = '\0';
-    strncpy(new_book->Book_Name, "C how to Program", BOOKNAME - 1);
-    new_book->Book_Name[BOOKNAME - 1] = '\0';
-    strncpy(new_book->Author, "test people", MAXLEN - 1);
-    new_book->Author[MAXLEN - 1] = '\0';
-    new_book->Quantity = 10;
-    new_book->Borrowed = 0;
-    new_book->next = NULL;
-    
-    Insert_Book_Linear_Probing(new_book);
+    int choice;
 
-    // 搜尋讀者和書籍
-    Reader* found_reader = Search_Reader(reader_list, reader_ID);
-    if (found_reader) {
-        printf("Find reader: %s\n", found_reader->Reader_Name);
-    }
+    // Continuously display the menu until the user selects exit
+    while (1) {
+        ShowMenu();
+        scanf("%d", &choice); // Get user choice
 
-    Book* found_book = Search_book("9781234567890");
-    if (found_book) {
-        printf("Find Book: %s\n", found_book->Book_Name);
-    }
+        // Execute corresponding actions based on user choice
+        switch (choice) {
+            case 1: {
+                // Add Reader
+                char reader_ID[MAXID], name[MAXLEN], phone[PHONE];
+                printf("Enter Reader ID: ");
+                scanf("%s", reader_ID);
+                printf("Enter Reader Name: ");
+                scanf("%s", name);
+                printf("Enter Phone Number: ");
+                scanf("%s", phone);
 
-    // 借閱紀錄
-    if (found_reader && found_book) {
-        if (found_book->Quantity > found_book->Borrowed) {
-            Insert_borrow_record(&borrow_list, found_reader, found_book);
-            found_book->Borrowed++;
-            printf("Borrow success: %s\n", found_book->Book_Name);
-        } else {
-            printf("Book: %s count: 0\n", found_book->Book_Name);
+                Insert_Reader(&reader_list, reader_ID, name, phone);
+                printf("Reader %s has been added.\n", name);
+                break;
+            }
+            case 2: {
+                // Search Reader
+                char reader_ID[MAXID];
+                printf("Enter Reader ID: ");
+                scanf("%s", reader_ID);
+
+                Reader* found_reader = Search_Reader(reader_list, reader_ID);
+                if (found_reader) {
+                    printf("Reader Info: ID=%s, Name=%s, Phone=%s\n", found_reader->Reader_ID, found_reader->Reader_Name, found_reader->phone);
+                } else {
+                    printf("Reader not found.\n");
+                }
+                break;
+            }
+            case 3: {
+                // Add Book
+                char isbn[ISBN], name[MAXBOOK], author[MAXLEN];
+                int quantity;
+                printf("Enter Book ISBN: ");
+                scanf("%s", isbn);
+                printf("Enter Book Name: ");
+                scanf("%s", name);
+                printf("Enter Author: ");
+                scanf("%s", author);
+                printf("Enter Quantity: ");
+                scanf("%d", &quantity);
+
+                Book* new_book = (Book*)malloc(sizeof(Book));
+                strncpy(new_book->Book_ISBN, isbn, ISBN - 1);
+                new_book->Book_ISBN[ISBN - 1] = '\0';
+                strncpy(new_book->Book_Name, name, MAXBOOK - 1);
+                new_book->Book_Name[MAXBOOK - 1] = '\0';
+                strncpy(new_book->Author, author, MAXLEN - 1);
+                new_book->Author[MAXLEN - 1] = '\0';
+                new_book->Quantity = quantity;
+                new_book->Borrowed = 0;
+
+                Insert_Book_Linear_Probing(new_book);
+                printf("Book %s has been added.\n", name);
+                break;
+            }
+            case 4: {
+                // Search Book
+                char isbn[ISBN];
+                printf("Enter Book ISBN: ");
+                scanf("%s", isbn);
+
+                Book* found_book = Search_book(isbn);
+                if (found_book) {
+                    printf("Book Info: ISBN=%s, Name=%s, Author=%s, Available Quantity=%d\n", found_book->Book_ISBN, found_book->Book_Name, found_book->Author, found_book->Quantity);
+                } else {
+                    printf("Book not found.\n");
+                }
+                break;
+            }
+            case 5: {
+                // Borrow Book
+                char reader_ID[MAXID], isbn[ISBN];
+                printf("Enter Reader ID: ");
+                scanf("%s", reader_ID);
+                printf("Enter Book ISBN: ");
+                scanf("%s", isbn);
+
+                Reader* found_reader = Search_Reader(reader_list, reader_ID);
+                Book* found_book = Search_book(isbn);
+                if (found_reader && found_book) {
+                    if (found_book->Quantity > found_book->Borrowed) {
+                        Insert_borrow_record(&borrow_list, found_reader, found_book);
+                        found_book->Borrowed++;
+                        printf("Successfully borrowed: %s\n", found_book->Book_Name);
+                    } else {
+                        printf("Book out of stock, cannot borrow.\n");
+                    }
+                } else {
+                    printf("Reader or Book not found, cannot borrow.\n");
+                }
+                break;
+            }
+            case 6: {
+                // Display All Readers
+                Reader* current = reader_list;
+                while (current != NULL) {
+                    printf("Reader Info: ID=%s, Name=%s, Phone=%s\n", current->Reader_ID, current->Reader_Name, current->phone);
+                    current = current->next;
+                }
+                break;
+            }
+            case 7: {
+                // Display All Books
+                for (int i = 0; i < TABLESIZE; i++) {
+                    Book* current = BookTable[i];
+                    while (current != NULL) {
+                        printf("Book Info: ISBN=%s, Name=%s, Author=%s, Available Quantity=%d\n", current->Book_ISBN, current->Book_Name, current->Author, current->Quantity);
+                        current = current->next;
+                    }
+                }
+                break;
+            }
+            case 8:
+                // Exit
+                printf("Exiting the system.\n");
+                // Free resources
+                Free_Reader_List(reader_list);
+                Free_Book_Table();
+                Free_Borrow_Record(borrow_list);
+                return 0;
+            default:
+                printf("Invalid choice, please try again.\n");
         }
-    } else {
-        printf("Can't find reader or Book, Can't create borrow record\n");
     }
-
-    // 釋放記憶體
-    Free_Reader_List(reader_list);
-    Free_Book_Table();
-    Free_Borrow_Record(borrow_list);
-    Free_AVL(root);
 
     return 0;
 }
